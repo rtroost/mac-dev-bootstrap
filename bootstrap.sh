@@ -13,10 +13,10 @@ ask() {
     return 0
   fi
   if [[ -n "$default" ]]; then
-    read -r -p "$prompt [$default]: " reply
+    read -r -p "$prompt [$default]: " reply < /dev/tty
     echo "${reply:-$default}"
   else
-    read -r -p "$prompt: " reply
+    read -r -p "$prompt: " reply < /dev/tty
     echo "$reply"
   fi
 }
@@ -26,7 +26,13 @@ ask_yn() {
   if [[ "$NONINTERACTIVE" == "1" ]]; then
     [[ "$default" =~ ^[Yy]$ ]] && return 0 || return 1
   fi
-  read -r -p "$prompt [y/N]: " reply
+  local prompt_suffix
+  if [[ "$default" =~ ^[Yy]$ ]]; then
+    prompt_suffix="[Y/n]"
+  else
+    prompt_suffix="[y/N]"
+  fi
+  read -r -p "$prompt $prompt_suffix: " reply < /dev/tty
   reply="${reply:-$default}"
   [[ "$reply" =~ ^[Yy]$ ]]
 }
@@ -152,7 +158,7 @@ if ask_yn "Set up SSH key for GitHub and register it using gh?" "Y"; then
   touch "$SSH_CONFIG"
   chmod 600 "$SSH_CONFIG"
 
-  if ! grep -qE '^\s*Host\s+github\.com\s*$' "$SSH_CONFIG"; then
+  if ! grep -qE '^[[:space:]]*Host[[:space:]]+github\.com[[:space:]]*$' "$SSH_CONFIG"; then
     cat >> "$SSH_CONFIG" <<'EOF'
 
 Host github.com

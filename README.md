@@ -12,7 +12,7 @@ Opinionated, idempotent macOS setup for software development. One command gets y
 | **Containers** | Colima, Docker, docker-buildx, docker-compose |
 | **Infra / K8s** | Azure CLI, Helm, kubectl, k9s |
 | **Local HTTPS** | mkcert + nss |
-| **GUI apps** | VS Code, Claude, iTerm2, Rectangle, Tailscale |
+| **GUI apps** | VS Code, Claude, iTerm2, Rectangle, Tailscale, Microsoft Remote Desktop |
 | **Shell** | zsh with mise, direnv, zoxide, fzf key bindings, starship prompt |
 
 ## Prerequisites
@@ -64,7 +64,7 @@ curl -fsSL https://raw.githubusercontent.com/rtroost/mac-dev-bootstrap/main/inst
 7. Optionally installs a local **HTTPS root CA** via mkcert
 8. Optionally configures **Git identity** and sensible defaults (`init.defaultBranch main`, `pull.rebase true`)
 9. Optionally sets up an **SSH key** (ed25519) and registers it with GitHub via `gh`
-10. Optionally configures **VS Code Settings Sync** (sign in once to pull extensions, settings, keybindings)
+10. Optionally configures **VS Code Settings Sync** by enabling `settingsSync.keybindingsPerPlatform` in VS Code user settings (sign in once to pull extensions, settings, keybindings)
 11. Optionally applies **macOS developer defaults** (see below)
 12. Optionally applies **security hardening** (see below)
 

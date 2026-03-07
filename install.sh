@@ -24,10 +24,8 @@ command -v tar  >/dev/null 2>&1 || { echo "❌ tar is required.";  exit 1; }
 
 if [[ -n "$REF" ]]; then
   SRC_URL="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/${REF}.tar.gz"
-  SRC_DIR="${REPO_NAME}-${REF}"
 else
   SRC_URL="https://github.com/${REPO_OWNER}/${REPO_NAME}/archive/refs/heads/${BRANCH}.tar.gz"
-  SRC_DIR="${REPO_NAME}-${BRANCH}"
 fi
 
 echo "🚀 mac-dev-bootstrap"
@@ -37,7 +35,7 @@ echo "⬇️  URL: ${SRC_URL}"
 if [[ "$NONINTERACTIVE" != "1" ]]; then
   echo
   echo "This will download and run bootstrap scripts on your machine."
-  read -r -p "Continue? [y/N] " ans
+  read -r -p "Continue? [y/N] " ans < /dev/tty
   [[ "$ans" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 0; }
 fi
 
@@ -47,6 +45,12 @@ trap cleanup EXIT
 
 curl -fsSL "$SRC_URL" -o "$TMP_DIR/src.tgz"
 tar -xzf "$TMP_DIR/src.tgz" -C "$TMP_DIR"
+
+SRC_DIR="$(tar -tzf "$TMP_DIR/src.tgz" | head -n 1 | cut -d/ -f1)"
+[[ -n "$SRC_DIR" && -d "$TMP_DIR/$SRC_DIR" ]] || {
+  echo "❌ Failed to determine extracted source directory."
+  exit 1
+}
 
 cd "$TMP_DIR/$SRC_DIR"
 chmod +x bootstrap.sh vscode-settings-sync.sh macos-defaults.sh security.sh

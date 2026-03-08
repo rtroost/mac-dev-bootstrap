@@ -16,7 +16,10 @@ SETTING_LINE='  "settingsSync.keybindingsPerPlatform": true'
 mkdir -p "$VSCODE_SETTINGS_DIR"
 
 if [[ ! -f "$VSCODE_SETTINGS_FILE" ]]; then
+  echo "  → Creating $VSCODE_SETTINGS_FILE"
   echo '{}' > "$VSCODE_SETTINGS_FILE"
+else
+  echo "  → Updating $VSCODE_SETTINGS_FILE"
 fi
 
 tmp="$(mktemp)"

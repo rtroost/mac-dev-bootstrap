@@ -75,7 +75,7 @@ fi
 log "📦 Updating Homebrew..."
 brew update
 log "📦 Installing packages from Brewfile..."
-HOMEBREW_NO_AUTO_UPDATE=1 brew bundle --file="$SCRIPT_DIR/Brewfile"
+HOMEBREW_NO_AUTO_UPDATE=1 brew bundle --verbose --file="$SCRIPT_DIR/Brewfile"
 
 # zsh integrations (idempotent managed block — replaced on every run)
 log "🐚 Configuring zsh integrations..."
@@ -98,8 +98,9 @@ BLOCK
 )
 
 touch "$ZSHRC"
-log "📝 Writing managed block to ~/.zshrc..."
+log "📝 Writing managed block to ~/.zshrc (mise, direnv, zoxide, fzf, starship)..."
 if grep -qF "$MARKER_BEGIN" "$ZSHRC"; then
+  echo "  → Updating existing managed block"
   # Replace existing block (everything between markers, inclusive)
   tmp="$(mktemp)"
   awk -v begin="$MARKER_BEGIN" -v end="$MARKER_END" -v block="$MANAGED_BLOCK" '
@@ -109,6 +110,7 @@ if grep -qF "$MARKER_BEGIN" "$ZSHRC"; then
   ' "$ZSHRC" > "$tmp"
   mv "$tmp" "$ZSHRC"
 else
+  echo "  → Appending new managed block"
   # Append new block
   printf '\n%s\n' "$MANAGED_BLOCK" >> "$ZSHRC"
 fi
@@ -153,10 +155,10 @@ GIT_EMAIL="$(git config --global user.email 2>/dev/null || true)"
 if ask_yn "Configure global Git identity (user.name / user.email)?" "Y"; then
   GIT_NAME="$(ask "Git user.name" "$GIT_NAME")"
   GIT_EMAIL="$(ask "Git user.email" "$GIT_EMAIL")"
-  [[ -n "$GIT_NAME"  ]] && git config --global user.name "$GIT_NAME"
-  [[ -n "$GIT_EMAIL" ]] && git config --global user.email "$GIT_EMAIL"
-  git config --global init.defaultBranch main
-  git config --global pull.rebase true
+  [[ -n "$GIT_NAME"  ]] && git config --global user.name "$GIT_NAME" && echo "  → user.name=$GIT_NAME"
+  [[ -n "$GIT_EMAIL" ]] && git config --global user.email "$GIT_EMAIL" && echo "  → user.email=$GIT_EMAIL"
+  git config --global init.defaultBranch main && echo "  → init.defaultBranch=main"
+  git config --global pull.rebase true && echo "  → pull.rebase=true"
 fi
 
 # SSH + GitHub registration (via gh)
@@ -182,7 +184,10 @@ if ask_yn "Set up SSH key for GitHub and register it using gh?" "Y"; then
   touch "$SSH_CONFIG"
   chmod 600 "$SSH_CONFIG"
 
-  if ! grep -qE '^[[:space:]]*Host[[:space:]]+github\.com[[:space:]]*$' "$SSH_CONFIG"; then
+  if grep -qE '^[[:space:]]*Host[[:space:]]+github\.com[[:space:]]*$' "$SSH_CONFIG"; then
+    echo "✅ SSH config for github.com already exists."
+  else
+    echo "  → Adding github.com entry to $SSH_CONFIG"
     cat >> "$SSH_CONFIG" <<'EOF'
 
 Host github.com
@@ -212,6 +217,7 @@ EOF
     echo "✅ GitHub already has this SSH key ($LOCAL_FP)."
   else
     TITLE="$(ask "GitHub SSH key title" "$(hostname)-$(date +%Y-%m)")"
+    echo "  → Uploading key $LOCAL_FP as \"$TITLE\""
     gh ssh-key add "$PUB_PATH" --title "$TITLE"
   fi
 

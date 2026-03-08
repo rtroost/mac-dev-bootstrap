@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-NONINTERACTIVE="${NONINTERACTIVE:-0}"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly NONINTERACTIVE="${NONINTERACTIVE:-0}"
 
 log() { printf "\n\033[1m%s\033[0m\n" "$*"; }
 
@@ -53,6 +53,12 @@ while kill -0 "$$" 2>/dev/null; do
   sudo -n true
   sleep 50
 done &
+SUDO_KEEPALIVE_PID=$!
+
+cleanup() {
+  kill "$SUDO_KEEPALIVE_PID" 2>/dev/null || true
+}
+trap cleanup EXIT INT TERM
 
 # Homebrew
 if ! command -v brew >/dev/null 2>&1; then
@@ -99,21 +105,22 @@ BLOCK
 
 touch "$ZSHRC"
 log "📝 Writing managed block to ~/.zshrc (mise, direnv, zoxide, fzf, starship)..."
+
+# Strip existing managed block (if any)
 if grep -qF "$MARKER_BEGIN" "$ZSHRC"; then
-  echo "  → Updating existing managed block"
-  # Replace existing block (everything between markers, inclusive)
+  echo "  → Removing old managed block"
   tmp="$(mktemp)"
-  awk -v begin="$MARKER_BEGIN" -v end="$MARKER_END" -v block="$MANAGED_BLOCK" '
-    $0 == begin { print block; skip=1; next }
+  awk -v begin="$MARKER_BEGIN" -v end="$MARKER_END" '
+    $0 == begin { skip=1; next }
     $0 == end   { skip=0; next }
     !skip       { print }
   ' "$ZSHRC" > "$tmp"
   mv "$tmp" "$ZSHRC"
-else
-  echo "  → Appending new managed block"
-  # Append new block
-  printf '\n%s\n' "$MANAGED_BLOCK" >> "$ZSHRC"
 fi
+
+# Append fresh block
+echo "  → Writing managed block"
+printf '\n%s\n' "$MANAGED_BLOCK" >> "$ZSHRC"
 
 # Activate mise for this session (bash, since this script runs under bash)
 log "🧰 Activating mise for this session..."

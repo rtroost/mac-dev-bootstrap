@@ -6,7 +6,7 @@ Opinionated, idempotent macOS setup for software development. One command gets y
 
 | Category | Tools |
 |---|---|
-| **CLI essentials** | git, gh, wget, jq, ripgrep, fd, eza, bat, fzf, zoxide, direnv, starship, httpie, lazygit, stow |
+| **CLI essentials** | git, gh, wget, jq, ripgrep, fd, eza, bat, fzf, zoxide, direnv, starship, httpie, lazygit, git-delta, stow |
 | **Runtimes** (via mise) | Node.js 24, Python 3.12, Terraform |
 | **Node** | corepack + pnpm |
 | **Containers** | Colima, Docker, docker-buildx, docker-compose |
@@ -75,7 +75,6 @@ curl -fsSL https://raw.githubusercontent.com/rtroost/mac-dev-bootstrap/main/inst
 - Avoid `.DS_Store` on network and USB drives
 - Dock: auto-hide with no delay
 - Screenshots: saved to `~/Screenshots` as PNG, no window shadow
-- Disable the "Are you sure you want to open this application?" quarantine dialog
 
 ### Security hardening (`security.sh`)
 

@@ -13,6 +13,7 @@ brew "direnv"
 brew "starship"
 brew "httpie"
 brew "lazygit"
+brew "git-delta"
 brew "stow"
 
 # Runtime manager

@@ -8,11 +8,11 @@ set -euo pipefail
 # Optional env vars:
 #   BRANCH=main REF=<commit-ish> NONINTERACTIVE=1
 
-REPO_OWNER="rtroost"
-REPO_NAME="mac-dev-bootstrap"
-BRANCH="${BRANCH:-main}"
-REF="${REF:-}"
-NONINTERACTIVE="${NONINTERACTIVE:-0}"
+readonly REPO_OWNER="rtroost"
+readonly REPO_NAME="mac-dev-bootstrap"
+readonly BRANCH="${BRANCH:-main}"
+readonly REF="${REF:-}"
+readonly NONINTERACTIVE="${NONINTERACTIVE:-0}"
 
 if [[ "${OSTYPE:-}" != "darwin"* ]]; then
   echo "❌ This installer is for macOS only."
@@ -40,8 +40,9 @@ if [[ "$NONINTERACTIVE" != "1" ]]; then
 fi
 
 TMP_DIR="$(mktemp -d)"
+readonly TMP_DIR
 cleanup() { rm -rf "$TMP_DIR"; }
-trap cleanup EXIT
+trap cleanup EXIT INT TERM
 
 curl -fsSL "$SRC_URL" -o "$TMP_DIR/src.tgz"
 tar -xzf "$TMP_DIR/src.tgz" -C "$TMP_DIR"

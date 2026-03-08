@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-log() { printf "\n\033[1m%s\033[0m\n" "$*"; }
+# Use log() from parent bootstrap.sh; define fallback if run standalone
+if ! declare -f log >/dev/null 2>&1; then
+  log() { printf "\n\033[1m%s\033[0m\n" "$*"; }
+fi
+
+MACOS_MAJOR="$(sw_vers -productVersion | cut -d. -f1)"
 
 # Keyboard
 log "⌨️  Setting keyboard repeat rate..."
@@ -32,10 +37,6 @@ mkdir -p "$HOME/Screenshots"
 defaults write com.apple.screencapture location -string "$HOME/Screenshots"
 defaults write com.apple.screencapture type -string "png"
 defaults write com.apple.screencapture disable-shadow -bool true
-
-# Disable the "Are you sure you want to open this application?" dialog
-log "🚫 Disabling Gatekeeper application quarantine dialog..."
-defaults write com.apple.LaunchServices LSQuarantine -bool false
 
 # Restart affected apps
 log "🔄 Restarting Finder, Dock, and SystemUIServer..."

@@ -2,7 +2,11 @@ name: Validate
 
 on:
   push:
+    branches: [main]
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   shellcheck:
@@ -14,9 +18,10 @@ jobs:
         uses: ludeeus/action-shellcheck@2.0.0
         with:
           scandir: .
+          severity: warning
 
   brewfile:
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 

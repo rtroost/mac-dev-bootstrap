@@ -12,7 +12,7 @@ Opinionated, idempotent macOS setup for software development. One command gets y
 | **Containers** | Colima, Docker, docker-buildx, docker-compose |
 | **Infra / K8s** | Azure CLI, Helm, kubectl, k9s |
 | **Local HTTPS** | mkcert + nss |
-| **GUI apps** | VS Code, Claude, iTerm2, Rectangle, Tailscale, Microsoft Remote Desktop |
+| **GUI apps** | VS Code, Claude, Firefox, iTerm2, Rectangle, Tailscale, Microsoft Remote Desktop |
 | **Shell** | zsh with mise, direnv, zoxide, fzf key bindings, starship prompt |
 
 ## Prerequisites
@@ -73,7 +73,7 @@ curl -fsSL https://raw.githubusercontent.com/rtroost/mac-dev-bootstrap/main/inst
 - Fast key repeat and short initial delay
 - Finder: show hidden files, path bar, status bar; default to column view
 - Avoid `.DS_Store` on network and USB drives
-- Dock: auto-hide with no delay
+- Dock: auto-hide with no delay; clears default icons and pins Finder, iTerm2, VS Code, Claude, Firefox
 - Screenshots: saved to `~/Screenshots` as PNG, no window shadow
 
 ### Security hardening (`security.sh`)

@@ -41,9 +41,13 @@ brew "pipx"
 brew "mkcert"
 brew "nss"
 
+# Dock management
+brew "dockutil"
+
 # GUI apps
 cask "visual-studio-code"
 cask "claude"
+cask "firefox"
 cask "iterm2"
 cask "rectangle"
 cask "tailscale-app"

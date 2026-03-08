@@ -38,6 +38,30 @@ defaults write com.apple.screencapture location -string "$HOME/Screenshots"
 defaults write com.apple.screencapture type -string "png"
 defaults write com.apple.screencapture disable-shadow -bool true
 
+# Dock icons: clear defaults and pin dev apps only
+if command -v dockutil >/dev/null 2>&1; then
+  log "🧹 Cleaning up Dock icons..."
+  dockutil --remove all --no-restart
+
+  log "📌 Pinning dev apps to Dock..."
+  DOCK_APPS=(
+    "/System/Applications/Finder.app"
+    "/Applications/iTerm.app"
+    "/Applications/Visual Studio Code.app"
+    "/Applications/Claude.app"
+    "/Applications/Firefox.app"
+  )
+  for app in "${DOCK_APPS[@]}"; do
+    if [[ -d "$app" ]]; then
+      dockutil --add "$app" --no-restart
+    else
+      echo "  ⚠️  $app not found — skipping"
+    fi
+  done
+else
+  echo "⚠️  dockutil not found — skipping Dock icon cleanup"
+fi
+
 # Restart affected apps
 log "🔄 Restarting Finder, Dock, and SystemUIServer..."
 killall Finder || true

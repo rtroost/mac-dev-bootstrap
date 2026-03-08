@@ -55,4 +55,5 @@ SRC_DIR="$(tar -tzf "$TMP_DIR/src.tgz" | head -n 1 | cut -d/ -f1)"
 
 cd "$TMP_DIR/$SRC_DIR"
 chmod +x bootstrap.sh vscode-settings-sync.sh macos-defaults.sh security.sh
-NONINTERACTIVE="$NONINTERACTIVE" ./bootstrap.sh
+export NONINTERACTIVE
+./bootstrap.sh

@@ -44,6 +44,15 @@ fi
 
 log "🚀 Starting macOS Dev Bootstrap"
 
+# Ask for sudo upfront and keep the credential cached for the entire run.
+# The background loop refreshes the sudo timestamp every 50 seconds until
+# this script's process exits.
+sudo -v
+while kill -0 "$$" 2>/dev/null; do
+  sudo -n true
+  sleep 50
+done &
+
 # Homebrew
 if ! command -v brew >/dev/null 2>&1; then
   log "🍺 Installing Homebrew..."
@@ -203,7 +212,6 @@ fi
 # Security hardening
 if ask_yn "Apply basic security settings (firewall, stealth mode)?" "N"; then
   log "🔐 Applying security settings (sudo required)..."
-  sudo -v
   "$SCRIPT_DIR/security.sh" || true
 fi
 

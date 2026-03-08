@@ -180,10 +180,13 @@ EOF
   # Add to keychain/agent (best-effort, idempotent)
   ssh-add --apple-use-keychain "$KEY_PATH" >/dev/null 2>&1 || true
 
-  # gh auth
+  # gh auth — ensure logged in with the admin:public_key scope
   if ! gh auth status >/dev/null 2>&1; then
     log "🐙 Logging into GitHub via gh..."
-    gh auth login --git-protocol ssh --web
+    gh auth login --git-protocol ssh --web --scopes admin:public_key
+  elif ! gh ssh-key list >/dev/null 2>&1; then
+    log "🔑 Requesting admin:public_key scope..."
+    gh auth refresh -h github.com -s admin:public_key
   fi
 
   # Deduplicate by fingerprint

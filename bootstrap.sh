@@ -47,6 +47,7 @@ log "🚀 Starting macOS Dev Bootstrap"
 # Ask for sudo upfront and keep the credential cached for the entire run.
 # The background loop refreshes the sudo timestamp every 50 seconds until
 # this script's process exits.
+log "🔑 Caching sudo credentials..."
 sudo -v
 while kill -0 "$$" 2>/dev/null; do
   sudo -n true
@@ -57,9 +58,12 @@ done &
 if ! command -v brew >/dev/null 2>&1; then
   log "🍺 Installing Homebrew..."
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+else
+  log "🍺 Homebrew already installed."
 fi
 
 # Apple Silicon vs Intel
+log "🔧 Configuring Homebrew shell environment..."
 if [[ -x /opt/homebrew/bin/brew ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 elif [[ -x /usr/local/bin/brew ]]; then
@@ -68,8 +72,9 @@ else
   eval "$(brew shellenv)"
 fi
 
-log "📦 Installing packages from Brewfile..."
+log "📦 Updating Homebrew..."
 brew update
+log "📦 Installing packages from Brewfile..."
 HOMEBREW_NO_AUTO_UPDATE=1 brew bundle --file="$SCRIPT_DIR/Brewfile"
 
 # zsh integrations (idempotent managed block — replaced on every run)
@@ -93,6 +98,7 @@ BLOCK
 )
 
 touch "$ZSHRC"
+log "📝 Writing managed block to ~/.zshrc..."
 if grep -qF "$MARKER_BEGIN" "$ZSHRC"; then
   # Replace existing block (everything between markers, inclusive)
   tmp="$(mktemp)"
@@ -108,18 +114,22 @@ else
 fi
 
 # Activate mise for this session (bash, since this script runs under bash)
+log "🧰 Activating mise for this session..."
 eval "$(mise activate bash)" >/dev/null 2>&1 || true
 
 # Runtimes (mise) — `mise use -g` installs and sets as global in one step
-log "🧰 Installing runtimes via mise..."
+log "🧰 Installing Node.js via mise..."
 mise use -g node@24
+log "🧰 Installing Python via mise..."
 mise use -g python@3.12
+log "🧰 Installing Terraform via mise..."
 mise use -g terraform@latest
 
 log "📦 Enabling pnpm via corepack..."
 corepack enable pnpm || true
 
 # Colima
+log "🐳 Checking Colima (Docker runtime)..."
 if colima status >/dev/null 2>&1; then
   echo "✅ Colima is already running."
 elif ask_yn "Start Colima (Docker runtime) now?" "Y"; then
@@ -137,6 +147,7 @@ if ask_yn "Install local HTTPS root CA with mkcert?" "Y"; then
 fi
 
 # Git identity
+log "🔧 Configuring Git identity..."
 GIT_NAME="$(git config --global user.name 2>/dev/null || true)"
 GIT_EMAIL="$(git config --global user.email 2>/dev/null || true)"
 if ask_yn "Configure global Git identity (user.name / user.email)?" "Y"; then
@@ -157,12 +168,16 @@ if ask_yn "Set up SSH key for GitHub and register it using gh?" "Y"; then
   KEY_PATH="$HOME/.ssh/id_ed25519"
   PUB_PATH="$KEY_PATH.pub"
 
-  if [[ ! -f "$KEY_PATH" ]]; then
+  if [[ -f "$KEY_PATH" ]]; then
+    echo "✅ SSH key already exists at $KEY_PATH."
+  else
     DEFAULT_COMMENT="${GIT_EMAIL:-}"
     COMMENT="$(ask "SSH key comment (email/label)" "${DEFAULT_COMMENT:-mac-dev-bootstrap}")"
+    log "🔑 Generating SSH key..."
     ssh-keygen -t ed25519 -f "$KEY_PATH" -N "" -C "$COMMENT"
   fi
 
+  log "🔧 Configuring SSH for GitHub..."
   SSH_CONFIG="$HOME/.ssh/config"
   touch "$SSH_CONFIG"
   chmod 600 "$SSH_CONFIG"
@@ -178,6 +193,7 @@ EOF
   fi
 
   # Add to keychain/agent (best-effort, idempotent)
+  log "🔑 Adding SSH key to keychain..."
   ssh-add --apple-use-keychain "$KEY_PATH" >/dev/null 2>&1 || true
 
   # gh auth — ensure logged in with the admin:public_key scope
@@ -190,6 +206,7 @@ EOF
   fi
 
   # Deduplicate by fingerprint
+  log "🐙 Registering SSH key with GitHub..."
   LOCAL_FP="$(ssh-keygen -lf "$PUB_PATH" | awk '{print $2}')"
   if gh ssh-key list 2>/dev/null | awk '{print $2}' | grep -q "$LOCAL_FP"; then
     echo "✅ GitHub already has this SSH key ($LOCAL_FP)."
@@ -203,18 +220,21 @@ EOF
 fi
 
 # VS Code Settings Sync
+log "💻 VS Code Settings Sync..."
 if ask_yn "Configure VS Code Settings Sync?" "Y"; then
   "$SCRIPT_DIR/vscode-settings-sync.sh" || true
 fi
 
 # macOS defaults
+log "🖥️  macOS developer defaults..."
 if ask_yn "Apply macOS developer defaults (Finder/Dock/keys)?" "Y"; then
   "$SCRIPT_DIR/macos-defaults.sh" || true
 fi
 
 # Security hardening
+log "🛡️  Security hardening..."
 if ask_yn "Apply basic security settings (firewall, stealth mode)?" "N"; then
-  log "🔐 Applying security settings (sudo required)..."
+  log "🔐 Applying security settings..."
   "$SCRIPT_DIR/security.sh" || true
 fi
 

@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+log() { printf "\n\033[1m%s\033[0m\n" "$*"; }
+
+log "💻 Configuring VS Code Settings Sync..."
+
 VSCODE_SETTINGS_DIR="$HOME/Library/Application Support/Code/User"
 VSCODE_SETTINGS_FILE="$VSCODE_SETTINGS_DIR/settings.json"
 SETTING_KEY='"settingsSync.keybindingsPerPlatform"'
